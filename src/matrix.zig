@@ -1,7 +1,5 @@
 const std = @import("std");
-const Allocator = @import("heap/ArenaAllocator");
-
-pub const TypeError = error.TypeError;
+const Alloc = std.heap.ArenaAllocator;
 
 fn contains(comptime types: []const type, comptime T: type) bool {
     for (types) |curtype| {
@@ -12,7 +10,7 @@ fn contains(comptime types: []const type, comptime T: type) bool {
     return false;
 }
 
-pub fn Matrix(comptime T: type) error{TypeError}!type {
+pub fn Matrix(comptime T: type) type {
     const allowedTypes = [_]type{
         i8,
         i16,
@@ -31,8 +29,22 @@ pub fn Matrix(comptime T: type) error{TypeError}!type {
     };
 
     if (!contains(&allowedTypes, T)) {
-        return TypeError;
+        @compileError("Illegal type");
     }
 
-    return struct { val: [*][*]T, alloc: Allocator };
+    return struct {
+        vals: []T,
+        cols: usize,
+        rows: usize,
+        alloc: *std.mem.Allocator,
+
+        pub fn init(allocator: *std.mem.Allocator, cols: usize, rows: usize) !Matrix(T) {
+            var values: []T = try allocator.alloc(T, rows * cols);
+            var i: usize = 0;
+            while (i < rows * cols) : (i += 1) {
+                values[i] = 0;
+            }
+            return .{ .alloc = allocator, .vals = values, .rows = rows, .cols = cols };
+        }
+    };
 }
