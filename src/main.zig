@@ -21,6 +21,7 @@ test "basic add functionality" {
 //     try testing.expectError(std.on, mat.Matrix(bool));
 // }
 
+// not supported by current random impl
 test "initialise f16 matrix" {
     var arena = allocator.init(std.heap.page_allocator);
     var alloc = arena.allocator();
@@ -42,8 +43,28 @@ test "initialise u32 matrix" {
     var rows: usize = 10;
     var cols: usize = 10;
     const m = try u32m.init(&alloc, rows, cols);
-    var i: usize = 1;
-    while (i < (rows * cols) + 1) : (i += 1) {
+    var i: usize = 0;
+    while (i < rows * cols) : (i += 1) {
         try testing.expect(m.vals[i] == 0);
     }
+}
+
+test "randomise f32 matrix" {
+    var arena = allocator.init(std.heap.page_allocator);
+    var alloc = arena.allocator();
+    defer arena.deinit();
+    var rows: usize = 10;
+    var cols: usize = 10;
+    var m = try f32m.init(&alloc, rows, cols);
+    try m.randomise();
+}
+
+test "randomise u32 matrix" {
+    var arena = allocator.init(std.heap.page_allocator);
+    var alloc = arena.allocator();
+    defer arena.deinit();
+    var rows: usize = 10;
+    var cols: usize = 10;
+    var m = try u32m.init(&alloc, rows, cols);
+    try m.randomise();
 }

@@ -1,8 +1,31 @@
 const std = @import("std");
 const Alloc = std.heap.ArenaAllocator;
 
-fn contains(comptime types: []const type, comptime T: type) bool {
-    for (types) |curtype| {
+const typeGroup = enum {
+    float,
+    signed,
+    unsigned,
+};
+
+const allowedTypes = [_]type{
+    i8,
+    i16,
+    i32,
+    i64,
+    i128,
+    f16,
+    f32,
+    f64,
+    f128,
+    u8,
+    u16,
+    u32,
+    u64,
+    u128,
+};
+
+fn allowed(comptime T: type) bool {
+    for (allowedTypes) |curtype| {
         if (T == curtype) {
             return true;
         }
@@ -10,25 +33,17 @@ fn contains(comptime types: []const type, comptime T: type) bool {
     return false;
 }
 
-pub fn Matrix(comptime T: type) type {
-    const allowedTypes = [_]type{
-        i8,
-        i16,
-        i32,
-        i64,
-        i128,
-        f16,
-        f32,
-        f64,
-        f128,
-        u8,
-        u16,
-        u32,
-        u64,
-        u128,
-    };
+fn toTypeGroup(comptime T: type) !typeGroup {
+    switch (T) {
+        u8, u16, u32, u64, u128 => return typeGroup.unsigned,
+        i8, i16, i32, i64, i128 => return typeGroup.signed,
+        f16, f32, f64, f128 => return typeGroup.float,
+        else => @compileError("Type is invalid"),
+    }
+}
 
-    if (!contains(&allowedTypes, T)) {
+pub fn Matrix(comptime T: type) type {
+    if (!allowed(T)) {
         @compileError("Illegal type");
     }
 
@@ -45,6 +60,33 @@ pub fn Matrix(comptime T: type) type {
                 values[i] = 0;
             }
             return .{ .alloc = allocator, .vals = values, .rows = rows, .cols = cols };
+        }
+
+        pub fn randomise(self: *Matrix(T)) !void {
+            var r = std.rand.DefaultPrng.init(42);
+            var sup: std.rand.Random = r.random();
+            sup.
+            const typegr = try toTypeGroup(T);
+            std.debug.print("{any}", .{toTypeGroup(T)});
+
+            var i: usize = 0;
+            switch (typegr) {
+                typeGroup.float => {
+                    while (i < self.rows * self.cols) : (i += 1) {
+                        self.vals[i] = sup.float(T);
+                    }
+                },
+                typeGroup.unsigned => {
+                    while (i < self.rows * self.cols) : (i += 1) {
+                        self.vals[i] = sup.int(T);
+                    }
+                },
+                typeGroup.signed => {
+                    while (i < self.rows * self.cols) : (i += 1) {
+                        self.vals[i] = sup.int(T);
+                    }
+                },
+            }
         }
     };
 }
