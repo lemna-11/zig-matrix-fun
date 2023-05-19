@@ -65,27 +65,16 @@ pub fn Matrix(comptime T: type) type {
         pub fn randomise(self: *Matrix(T)) !void {
             var r = std.rand.DefaultPrng.init(42);
             var sup: std.rand.Random = r.random();
-            sup.
-            const typegr = try toTypeGroup(T);
-            std.debug.print("{any}", .{toTypeGroup(T)});
-
             var i: usize = 0;
-            switch (typegr) {
-                typeGroup.float => {
-                    while (i < self.rows * self.cols) : (i += 1) {
-                        self.vals[i] = sup.float(T);
-                    }
-                },
-                typeGroup.unsigned => {
-                    while (i < self.rows * self.cols) : (i += 1) {
-                        self.vals[i] = sup.int(T);
-                    }
-                },
-                typeGroup.signed => {
-                    while (i < self.rows * self.cols) : (i += 1) {
-                        self.vals[i] = sup.int(T);
-                    }
-                },
+            while (i < self.rows * self.cols) : (i += 1) {
+                switch (try toTypeGroup(T)) {
+                    typeGroup.float => {
+                        self.vals[i] = @call(std.builtin.CallModifier.auto, sup.float, .{T});
+                    },
+                    typeGroup.signed, typeGroup.unsigned => {
+                        self.vals[i] = @call(std.builtin.CallModifier.auto, sup.int, .{T});
+                    },
+                }
             }
         }
     };
