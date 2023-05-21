@@ -27,7 +27,7 @@ test "dot product test" {
     try mata.randomise(r.random());
     var matb = try mat.f32m.init(alloc, 3, 10);
     try matb.randomise(r.random());
-    var matc = try mat.f32m.dot(alloc, mata, matb);
+    var matc = try mat.dot(alloc, mata, matb);
     matc.print();
     try testing.expect(matc.rows == 10 and matc.cols == 10);
 }

@@ -28,54 +28,54 @@ pub const f32m = struct {
         }
     }
 
-    pub fn dot(allocator: std.mem.Allocator, a: Self, b: Self) !Self {
-        var returnMatrix = try Self.init(allocator, a.cols, b.rows);
-        var colR: usize = 0;
-        var rowR: usize = 0;
-
-        while (colR < returnMatrix.cols) : (colR += 1) {
-            while (rowR < returnMatrix.rows) : (rowR += 1) {
-                returnMatrix.values[colR][rowR] = 0;
-            }
-        }
-
-        var colA: usize = 0;
-        var rowA: usize = 0;
-        var colB: usize = 0;
-        var rowB: usize = 0;
-
-        while (colA < a.cols) : (colA += 1) {
-            while (rowA < a.rows) : (rowA += 1) {
-                while (colB < b.cols) : (colB += 1) {
-                    while (rowB < b.rows) : (rowB += 1) {
-                        returnMatrix.values[colA][rowB] += (a.values[colA][rowA] * b.values[colB][rowB]);
-                    }
-                    rowB = 0;
-                }
-                colB = 0;
-            }
-            rowA = 0;
-        }
-
-        return returnMatrix;
-    }
-
-    pub fn scalarMult(a: *Self, scalar: f32) !void {
-        for (a.values, 0..) |value, i| {
-            for (value, 0..) |_, j| {
-                a.values[i][j] *= scalar;
-            }
-        }
-    }
-
     pub fn print(mat: Self) void {
         std.debug.print("matrix: {}x{}\n", .{ mat.cols, mat.rows });
         for (mat.values) |col| {
             std.debug.print("\t", .{});
             for (col) |value| {
-                std.debug.print("{3f}  ", .{value});
+                std.debug.print("{}  ", .{value});
             }
             std.debug.print("\n", .{});
         }
     }
 };
+
+pub fn dot(allocator: std.mem.Allocator, a: f32m, b: f32m) !f32m {
+    var returnMatrix = try f32m.init(allocator, a.cols, b.rows);
+    var colR: usize = 0;
+    var rowR: usize = 0;
+
+    while (colR < returnMatrix.cols) : (colR += 1) {
+        while (rowR < returnMatrix.rows) : (rowR += 1) {
+            returnMatrix.values[colR][rowR] = 0;
+        }
+    }
+
+    var colA: usize = 0;
+    var rowA: usize = 0;
+    var colB: usize = 0;
+    var rowB: usize = 0;
+
+    while (colA < a.cols) : (colA += 1) {
+        while (rowA < a.rows) : (rowA += 1) {
+            while (colB < b.cols) : (colB += 1) {
+                while (rowB < b.rows) : (rowB += 1) {
+                    returnMatrix.values[colA][rowB] += (a.values[colA][rowA] * b.values[colB][rowB]);
+                }
+                rowB = 0;
+            }
+            colB = 0;
+        }
+        rowA = 0;
+    }
+
+    return returnMatrix;
+}
+
+pub fn scalarMult(a: *f32m, scalar: f32) !void {
+    for (a.values, 0..) |value, i| {
+        for (value, 0..) |_, j| {
+            a.values[i][j] *= scalar;
+        }
+    }
+}
